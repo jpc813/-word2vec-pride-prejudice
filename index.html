@@ -93,6 +93,7 @@ li.hit .fill{background:var(--claret)}
 
 /* analogy */
 .analogy{font-family:var(--display);font-size:1.35rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.analogy .btn{font-family:var(--ui);font-size:1rem}
 .analogy input[type=text]{font-family:var(--ui);font-size:1rem;width:9.5rem}
 
 /* segmented model switch */
@@ -253,7 +254,7 @@ footer p{max-width:64ch}
     <dt>Settings</dt><dd id="settings"></dd>
     <dt>Models</dt><dd>Skip-gram (sg=1) and CBOW (sg=0), identical in every other setting</dd>
   </dl>
-  <p>Trained with Gensim in Google Colab. Each paragraph was joined onto one line, lowercased, and stripped of punctuation before training, so single-letter words like “a” and “i” aren’t in the vocabulary. Vectors are stored at reduced precision to keep this page small; the rankings match the original models.</p>
+  <p>Trained with Gensim in Google Colab. Each paragraph was joined onto one line, lowercased, and stripped of punctuation before training, so single-letter words like “a” and “i” aren’t in the vocabulary. Vectors are stored at reduced precision to keep this page small; rankings match the original models except where two scores are nearly tied.</p>
   <p>What the two models show: skip-gram links a word to the events and talk around it (Wickham sits beside <i>account</i>, <i>cruelty</i>, and <i>history</i>), while CBOW groups words that play the same role (Darcy beside Bingley, Collins, and Wickham). With a single short novel, CBOW’s averaging smooths out the noise, which is why it solves the Jane : Bingley :: Elizabeth : Darcy analogy and skip-gram doesn’t.</p>
 </footer>
 
@@ -531,7 +532,9 @@ function drawMap(){
   const head = el("tr", {}, el("th"), ...items.map(it => el("th", { scope: "col", textContent: it.w })));
   const body = items.map((it, r) => el("tr", {}, el("th", { scope: "row", textContent: it.w }), ...idx.map((j, c) => {
     const s = r === c ? 1 : cos(m, idx[r], j), td = el("td", { textContent: r === c ? "" : (Math.abs(s) < 0.005 ? 0 : s).toFixed(2), title: `${it.w} · ${items[c].w}: ${fmt(s)}` });
-    td.style.background = mix(s); if (s > 0.55) td.style.color = paper; return td;
+    const bg = mix(s); td.style.background = bg;
+    const [R, G, B] = bg.match(/\d+/g).map(Number), lum = (0.299 * R + 0.587 * G + 0.114 * B) / 255;
+    td.style.color = lum > 0.55 ? "#1C2540" : "#FFFFFF"; return td;
   })));
   $("heat").replaceChildren(el("thead", {}, head), el("tbody", {}, ...body));
 
